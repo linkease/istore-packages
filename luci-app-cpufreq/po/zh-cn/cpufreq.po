@@ -1,0 +1,41 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "CPU Tuning"
+msgstr "CPU调节"
+
+msgid "Manage CPU performance and temperature over LuCI."
+msgstr "通过LuCI调节CPU性能和温度"
+
+msgid "CPU frequence:"
+msgstr "CPU频率:"
+
+msgid "temperature:"
+msgstr "温度:"
+
+msgid "CPUFreq governor"
+msgstr "CPU性能策略"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "conservative"
+msgstr "自动渐变"
+
+msgid "userspace"
+msgstr "用户空间"
+
+msgid "powersave"
+msgstr "节能模式"
+
+msgid "ondemand"
+msgstr "自动调节"
+
+msgid "performance"
+msgstr "性能模式"
+
+msgid "interactive"
+msgstr "交互设备"
+
+msgid "Fan trigger temperature"
+msgstr "风扇启动温度"
