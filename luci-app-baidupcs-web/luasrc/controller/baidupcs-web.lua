@@ -10,9 +10,14 @@ function index()
 end
 
 function act_status()
-	local e={}
-	e.running=luci.sys.call("pgrep baidupcs-web >/dev/null")==0
-	-- e.port=luci.sys.exec("uci get baidupcs-web.config.port")
+        local sys  = require "luci.sys"
+        local uci  = require "luci.model.uci".cursor()
+        local port = tonumber(uci:get_first("baidupcs-web", "config", "port"))
+
+        local status = {
+                running = (sys.call("pgrep baidupcs-web >/dev/null") == 0),
+                port = port
+        }
 	luci.http.prepare_content("application/json")
-	luci.http.write_json(e)
+	luci.http.write_json(status)
 end
