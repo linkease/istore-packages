@@ -12,7 +12,7 @@ end
 function act_status()
         local sys  = require "luci.sys"
         local uci  = require "luci.model.uci".cursor()
-        local port = tonumber(uci:get_first("baidupcs-web", "config", "port"))
+        local port = tonumber(uci:get("baidupcs-web", "config", "port"))
 
         local status = {
                 running = (sys.call("pgrep baidupcs-web >/dev/null") == 0),
