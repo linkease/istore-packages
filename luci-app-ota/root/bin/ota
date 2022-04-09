@@ -1,6 +1,16 @@
 #!/bin/sh
 # author jjm2473
-URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64/
+OS_ARCH_TYPE=`grep 'DISTRIB_ARCH=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
+FIRMWARE_TYPE=`fdisk -l | grep "Disklabel type" | cut -d':' -f2`
+if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
+    if [ "A-${FIRMWARE_TYPE}" == "A- dos" ]; then
+        URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64/
+    elif [ "A-${FIRMWARE_TYPE}" == "A- gpt" ]; then
+        URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64_efi/
+    fi
+else
+    URL_BASE=https://fw.koolcenter.com/iStoreOS/ars2
+fi
 WRLOCK=/var/lock/ota_background.lock
 
 action=${1}
@@ -63,6 +73,13 @@ prepare_check() {
     local release=`grep 'DISTRIB_RELEASE=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
     local revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f2`
     local current="$release-$revision"
+    # 兼容多个平台
+    if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
+        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f2`
+    else
+        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
+    fi
+
     cat /dev/null > /var/run/ota/ota.log
     fcurl --connect-timeout 5 -o /var/run/ota/ota.latest "$URL_BASE/version.latest" || { rm -f /var/run/ota/ota.latest ; return 255; }
     grep -Fq "$current" /var/run/ota/ota.latest && return 1
