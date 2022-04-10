@@ -75,7 +75,7 @@ prepare_check() {
     local current="$release-$revision"
     # 兼容多个平台
     if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
-        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"
+        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
     else
         revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
     fi
