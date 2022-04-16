@@ -1,11 +1,11 @@
 #!/bin/sh
 # author jjm2473
 OS_ARCH_TYPE=`grep 'DISTRIB_ARCH=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
-FIRMWARE_TYPE=`fdisk -l | grep "Disklabel type" | cut -d':' -f2`
+FIRMWARE_TYPE=`blkid -o value -s PTTYPE $(lsblk -s -r -p $(blkid -L "kernel")| grep disk | cut -d' ' -f1)`
 if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
-    if [ "A-${FIRMWARE_TYPE}" == "A- dos" ]; then
+    if [ "A-${FIRMWARE_TYPE}" == "A-dos" ]; then
         URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64/
-    elif [ "A-${FIRMWARE_TYPE}" == "A- gpt" ]; then
+    elif [ "A-${FIRMWARE_TYPE}" == "A-gpt" ]; then
         URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64_efi/
     fi
 else
