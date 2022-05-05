@@ -1,0 +1,41 @@
+msgid "Mount NetShare"
+msgstr "挂载网络共享"
+
+msgid "Mount NetShare for OpenWrt"
+msgstr "可以将 SMB/CIFS,WebDAV 的共享文件夹挂载到本地（修改挂载后，需要重启使用这些文件夹的客户端）"
+
+msgid "Mount CIFS/SMB"
+msgstr "挂载 CIFS/SMB （Windows 网络共享）"
+
+msgid "Server IP"
+msgstr "服务器IP"
+
+msgid "Share Folder"
+msgstr "共享文件夹"
+
+msgid "Mount Path"
+msgstr "挂载路径"
+
+msgid "SMB Version"
+msgstr "SMB 版本"
+
+msgid "Arguments"
+msgstr "挂载参数"
+
+msgid "Charset"
+msgstr "字符集"
+
+msgid "User"
+msgstr "用户名"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Read Only"
+msgstr "只读"
+
+msgid "Read/Write"
+msgstr "可读/写"
+
+msgid "Mount WebDAV"
+msgstr "挂载 WebDAV"
