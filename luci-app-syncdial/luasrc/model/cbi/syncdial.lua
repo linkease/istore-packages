@@ -54,7 +54,7 @@ o:depends("dial_type","2")
 o=s:option(Value,"dialwait","重拨等待时间","重拨时，接口全部下线后下一次拨号前的等待时间。单位：秒 最小值：5秒")
 o.datatype="and(uinteger,min(5))"
 o.optional=false
-o=s:option(Flag,"old_frame","使用旧的macvlan创建方式")
+o=s:option(Flag,"old_frame","使用旧的macvlan创建方式", "Openwrt 21版以上不要勾选")
 o.rmempty=false
 o=s:option(Flag,"nomwan","不自动配置MWAN3负载均衡","需要自定义负载均衡设置或者要使用策略路由的用户选择")
 o.rmempty=false
