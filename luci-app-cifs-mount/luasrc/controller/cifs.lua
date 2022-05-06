@@ -6,5 +6,5 @@ function index()
 		return
 	end
 	
-	entry({"admin", "nas", "cifs"}, cbi("cifs"), _("Mount NetShare")).dependent = true
+	entry({"admin", "services", "cifs"}, cbi("cifs"), _("Mount NetShare")).dependent = true
 end
