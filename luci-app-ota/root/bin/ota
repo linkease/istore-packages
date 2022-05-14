@@ -1,15 +1,26 @@
 #!/bin/sh
 # author jjm2473
-OS_ARCH_TYPE=`grep 'DISTRIB_ARCH=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
-FIRMWARE_TYPE=`blkid -o value -s PTTYPE $(lsblk -s -r -p $(blkid -L "kernel")| grep disk | cut -d' ' -f1)`
-if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
+. /usr/share/libubox/jshn.sh
+
+OS_ARCH_TYPE=`grep 'DISTRIB_ARCH=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'_' -f1`
+if [ "A-${OS_ARCH_TYPE}" == "A-x86" ]; then
+    FIRMWARE_TYPE=`blkid -o value -s PTTYPE $(lsblk -s -r -p $(blkid -L "kernel")| grep disk | cut -d' ' -f1)`
     if [ "A-${FIRMWARE_TYPE}" == "A-dos" ]; then
         URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64/
     elif [ "A-${FIRMWARE_TYPE}" == "A-gpt" ]; then
         URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64_efi/
     fi
-else
-    URL_BASE=https://fw.koolcenter.com/iStoreOS/ars2
+elif [ "A-${OS_ARCH_TYPE}" == "A-aarch64" ]; then
+    json_load "$(cat /etc/board.json)"
+    json_select model
+    json_get_var BOARD_MODEL_ID id
+    if [ "A-${BOARD_MODEL_ID}" == "A-friendlyarm,nanopi-r2s" ]; then
+        URL_BASE=https://fw.koolcenter.com/iStoreOS/r2s/
+    elif [ "A-${BOARD_MODEL_ID}" == "A-friendlyarm,nanopi-r4s" ]; then
+        URL_BASE=https://fw.koolcenter.com/iStoreOS/r4s/
+    else
+        URL_BASE=https://fw.koolcenter.com/iStoreOS/ars2
+    fi
 fi
 WRLOCK=/var/lock/ota_background.lock
 
@@ -74,10 +85,16 @@ prepare_check() {
     local revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f2`
     local current="$release-$revision"
     # 兼容多个平台
-    if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
+    if [ "A-${OS_ARCH_TYPE}" == "A-x86" ]; then
         revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
-    else
-        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
+    elif [ "A-${OS_ARCH_TYPE}" == "A-aarch64" ]; then
+        if [ "A-${BOARD_MODEL_ID}" == "A-friendlyarm,nanopi-r2s" ]; then
+            revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
+        elif [ "A-${BOARD_MODEL_ID}" == "A-friendlyarm,nanopi-r4s" ]; then
+            revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
+        else
+            revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
+        fi
     fi
 
     cat /dev/null > /var/run/ota/ota.log
