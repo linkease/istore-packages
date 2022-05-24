@@ -73,6 +73,7 @@ prepare_check() {
     local release=`grep 'DISTRIB_RELEASE=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
     local revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f2`
     local current="$release-$revision"
+    local latest=0
     # 兼容多个平台
     if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
         revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
@@ -82,7 +83,10 @@ prepare_check() {
 
     cat /dev/null > /var/run/ota/ota.log
     fcurl --connect-timeout 5 -o /var/run/ota/ota.latest "$URL_BASE/version.latest" || { rm -f /var/run/ota/ota.latest ; return 255; }
-    grep -Fq "$current" /var/run/ota/ota.latest && return 1
+    if grep -Fq "$current" /var/run/ota/ota.latest; then
+        latest=1
+        current=""
+    fi
     fcurl --connect-timeout 5 -o /var/run/ota/ota.index "$URL_BASE/version.index" || return 255;
     head -5 /var/run/ota/ota.index | while read line; do
         if [ -z "$line" -o "$line" = "$current" ]; then
@@ -95,7 +99,7 @@ prepare_check() {
     [ "`wc -l /var/run/ota/ota.log | cut -d' ' -f1`" -eq 0 ] && return 1
     [ "`wc -l /var/run/ota/ota.index | cut -d' ' -f1`" -gt 5 ] && echo "<a href=\"$URL_BASE/\" onclick=\"void(0)\" target=\"_blank\">More</a>" >> /var/run/ota/ota.log
     
-    return 0
+    return $latest
 }
 
 # 0: found newer fw, 1: already newest fw, *: err
@@ -108,15 +112,15 @@ do_check() {
     ret=$?
     flock -u 200 >/dev/null 2>&1
 
-    [ "$ret" -eq 0 ] || return $ret
-
-    # output
-    echo "<pre>"
-    sed -E 's/.*\((.+)\).*/\1/' /var/run/ota/ota.latest
-    echo "</pre>"
-    echo "<br><h2>ChangeLog:</h2>"
-    cat /var/run/ota/ota.log
-    return 0
+    if [ "$ret" -eq 0 ]; then
+        # output
+        echo "<pre>"
+        sed -E 's/.*\((.+)\).*/\1/' /var/run/ota/ota.latest
+        echo "</pre>"
+        echo "<br><h2>ChangeLog:</h2>"
+    fi
+    [ "$ret" -eq 0 -o "$ret" -eq 1 ] && cat /var/run/ota/ota.log
+    return $ret
 }
 
 # async download

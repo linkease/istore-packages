@@ -103,6 +103,11 @@
 				<div id="upgrade_log"></div>
 			</div>
 		</div>
+		<div class="state state-unchecked">
+			<div class="cbi-section-descr">
+				<div id="history_log"></div>
+			</div>
+		</div>
 	</fieldset>
 
 	<script>
@@ -116,6 +121,7 @@
 			var download_result = document.querySelector('#download_result');
 			var download_progress = document.querySelector('#download_progress');
 			var upgrade_log = document.querySelector('#upgrade_log');
+			var history_log = document.querySelector('#history_log');
 
 			var xhr_post = function(url, data, cb) {
 				data = data || {};
@@ -141,6 +147,7 @@
 						break;
 					case 1:
 						check_result.innerText = "<%:Already the latest firmware%>";
+						history_log.innerHTML = '<h2><%:History Log%>:</h2>' + d.msg;
 						break;
 					default:
 						check_result.innerText = "<%:Check failed%>";

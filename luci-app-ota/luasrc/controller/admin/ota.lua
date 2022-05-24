@@ -88,7 +88,7 @@ function action_check()
     ret.msg = o
   elseif r == 1 then
     ret.code = 1
-    ret.msg = "Already the latest firmware"
+    ret.msg = o
   else
     ret.code = 500
     ret.msg = e

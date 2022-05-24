@@ -51,3 +51,6 @@ msgstr ""
 
 msgid "The image file does not contain a supported format. Maybe try again later."
 msgstr ""
+
+msgid "History Log"
+msgstr ""
