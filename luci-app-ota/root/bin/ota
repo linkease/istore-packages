@@ -1,20 +1,33 @@
 #!/bin/sh
 # author jjm2473
-OS_ARCH_TYPE=`grep 'DISTRIB_ARCH=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
-FIRMWARE_TYPE=`blkid -o value -s PTTYPE $(lsblk -s -r -p $(blkid -L "kernel")| grep disk | cut -d' ' -f1)`
-if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
-    if [ "A-${FIRMWARE_TYPE}" == "A-dos" ]; then
-        URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64/
-    elif [ "A-${FIRMWARE_TYPE}" == "A-gpt" ]; then
-        URL_BASE=https://fw.koolcenter.com/iStoreOS/x86_64_efi/
-    fi
-else
-    URL_BASE=https://fw.koolcenter.com/iStoreOS/ars2
-fi
+. /usr/share/libubox/jshn.sh
+
 WRLOCK=/var/lock/ota_background.lock
 
 action=${1}
 shift
+
+ota_get_urlbase() {
+	local os_arch_type=`grep 'DISTRIB_ARCH=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'_' -f1`
+	local partition_type=`blkid -o value -s PTTYPE $(lsblk -s -r -p $(blkid -L "kernel")| grep disk | cut -d' ' -f1)`
+	local board_model_id
+	local tmp_part_type
+	local tmp_model_id
+	json_load "$(cat /etc/board.json)"
+	json_select model
+	json_get_var board_model_id id
+	local sections="$(uci -q show ota | grep "arch='${os_arch_type}'" | awk -F '.' '{print$2}')"
+	for section in ${sections}
+	do
+		tmp_part_type="$(uci -q get ota.${section}.partition)"
+		if [ "A-${partition_type}" == "A-${tmp_part_type}" ]; then
+			tmp_model_id="$(uci -q get ota.${section}.modelid)"
+			if [ "A-${tmp_model_id}" == "A-" -o "A-${tmp_model_id}" == "A-${board_model_id}" ]; then
+				URL_BASE=$(uci -q get ota.${section}.url)
+			fi
+		fi
+	done
+}
 
 sha256() {
     sha256sum $1 | cut -d' ' -f1
@@ -71,15 +84,10 @@ lock_download() {
 prepare_check() {
     local line
     local release=`grep 'DISTRIB_RELEASE=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
-    local revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f2`
+    local revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
     local current="$release-$revision"
-    # 兼容多个平台
-    if [ "A-${OS_ARCH_TYPE}" == "A-x86_64" ]; then
-        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
-    else
-        revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
-    fi
-
+    # get url
+    ota_get_urlbase
     cat /dev/null > /var/run/ota/ota.log
     fcurl --connect-timeout 5 -o /var/run/ota/ota.latest "$URL_BASE/version.latest" || { rm -f /var/run/ota/ota.latest ; return 255; }
     grep -Fq "$current" /var/run/ota/ota.latest && return 1
