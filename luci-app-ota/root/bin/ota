@@ -86,8 +86,7 @@ prepare_check() {
     local release=`grep 'DISTRIB_RELEASE=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/"`
     local revision=`grep 'DISTRIB_REVISION=' /etc/openwrt_release | sed -E "s/.*'(.+)'.*/\1/" | cut -d'-' -f1`
     local current="$release-$revision"
-    # get url
-    ota_get_urlbase
+
     cat /dev/null > /var/run/ota/ota.log
     fcurl --connect-timeout 5 -o /var/run/ota/ota.latest "$URL_BASE/version.latest" || { rm -f /var/run/ota/ota.latest ; return 255; }
     grep -Fq "$current" /var/run/ota/ota.latest && return 1
@@ -179,6 +178,8 @@ usage() {
 }
 
 ota_init || exit 255
+
+ota_get_urlbase
 
 case $action in
     "check")
