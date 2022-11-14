@@ -6,8 +6,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-qbittorrent
-PKG_VERSION=1.0
-PKG_RELEASE:=23
+PKG_VERSION:=1.0-24
+PKG_RELEASE:=
 
 LUCI_TITLE:=LuCI support for qBittorrent
 LUCI_PKGARCH:=all
@@ -29,6 +29,10 @@ define Package/$(PKG_NAME)/config
 			bool "Dynamic Build"
 			
 	endchoice
+endef
+
+define Package/$(PKG_NAME)/conffiles
+/etc/config/qbittorrent
 endef
 
 include $(TOPDIR)/feeds/luci/luci.mk
