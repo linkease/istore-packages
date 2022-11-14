@@ -57,10 +57,6 @@ MAKE_VARS += \
 
 TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
 
-define Package/qbittorrent/conffiles
-/etc/config/qbittorrent
-endef
-
 define Package/qbittorrent/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qbittorrent-nox $(1)/usr/bin
