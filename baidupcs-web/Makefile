@@ -70,7 +70,7 @@ define Build/Compile
 )
 	$(call GoPackage/Build/Compile)
 ifeq ($(CONFIG_BAIDUPCS_WEB_COMPRESS_UPX),y)
-	$(STAGING_DIR_HOST)/bin/upx --lzma --best $(GO_PKG_BUILD_BIN_DIR)/BaiduPCS-Go
+	upx --lzma --best $(GO_PKG_BUILD_BIN_DIR)/BaiduPCS-Go
 endif
 endef
 
