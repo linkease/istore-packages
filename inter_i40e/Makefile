@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/package.mk
 define KernelPackage/intel_i40e
   SUBMENU:=Network Devices
   TITLE:=Driver for Intel i40e series devices
-  DEPENDS:=@PCI_SUPPORT +kmod-ptp
+  DEPENDS:=@PCI_SUPPORT +kmod-ptp @TARGET_x86
   FILES:=\
   $(PKG_BUILD_DIR)/auxiliary.ko \
 	$(PKG_BUILD_DIR)/i40e.ko
