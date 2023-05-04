@@ -158,7 +158,7 @@ EOF
 				"CategoryChanged" "CategorySavePathChanged" "DefaultSavePathChanged"
 	sed_options "BitTorrent" "Session" \
 				"AnnounceToAllTiers" "BTProtocol" "CreateTorrentSubfolder" "DisableAutoTMMByDefault" "GlobalMaxSeedingMinutes" \
-				"SeedChokingAlgorithm" "SlowTorrentsDownloadRate" "SlowTorrentsInactivityTimer" "SlowTorrentsUploadRate"
+				"SeedChokingAlgorithm" "SlowTorrentsDownloadRate" "SlowTorrentsInactivityTimer" "SlowTorrentsUploadRate" "TempPathEnabled" "TempPath"
 	sed_options "Preferences" "WebUI" \
 				"AuthSubnetWhitelistEnabled" "AuthSubnetWhitelist" "CSRFProtection" \
 				"ClickjackingProtection" "HostHeaderValidation" "LocalHostAuth" \
