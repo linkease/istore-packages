@@ -17,5 +17,12 @@ if [ ."$(uci -q get qbittorrent.main)" != ."qbittorrent" ]; then
 	EOF
 fi
 
+if [ "$(uci -q get qbittorrent.main.Locale)" = "zh" ]; then
+	uci -q batch <<-EOF >/dev/null
+		set qbittorrent.main.Locale=zh_CN
+		commit qbittorrent
+	EOF
+fi
+
 rm -f /tmp/luci-indexcache
 exit 0
