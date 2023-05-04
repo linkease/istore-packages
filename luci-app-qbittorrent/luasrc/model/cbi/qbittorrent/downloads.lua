@@ -35,7 +35,7 @@ o.default = o.disabled
 o = s:option(Flag, "TempPathEnabled", translate("Temp Path Enabled"))
 o.enabled = "true"
 o.disabled = "false"
-o.default = o.enabled
+o.default = o.disabled
 
 o = s:option(Value, "TempPath", translate("Temp Path"))
 o.description = translate("The absolute and relative path can be set.")
