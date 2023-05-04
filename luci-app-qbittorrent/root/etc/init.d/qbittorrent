@@ -52,7 +52,7 @@ validate_QBT () {
 		'PreAllocation:or("true","false"):false' \
 		'SavePath:string:/tmp/download' \
 		'StartInPause:or("true","false"):false' \
-		'TempPathEnabled:or("true","false"):true' \
+		'TempPathEnabled:or("true","false"):false' \
 		'TempPath:string:temp/' \
 		'UseIncompleteExtension:or("true","false"):false' \
 		'TorrentExportDir:string' \

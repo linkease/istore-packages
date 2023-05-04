@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-qbittorrent
-PKG_VERSION:=1.0-24
+PKG_VERSION:=1.0-25
 PKG_RELEASE:=
 
 LUCI_TITLE:=LuCI support for qBittorrent
