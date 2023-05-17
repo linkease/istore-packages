@@ -3,6 +3,9 @@
 
 START=99
 STOP=10
+USE_PROCD=1
+
+PROG="/usr/bin/gowebdav"
 
 init_conf() {
 	config_load "gowebdav"
@@ -32,25 +35,32 @@ set_firewall() {
 	fi
 }
 
-start() {
+start_service() {
+	local auth_arg readonly_arg https_arg
+
 	init_conf
 
-	stop
-
-	[ "${enable}" -ne "1" ] && exit 0
+	set_type="stop"
+	[ "${enable}" -ne "1" ] && { set_firewall 2>/dev/null ; return 1; }
 
 	mkdir -p "${root_dir}"
 
-	[ "${allow_wan}" -ne "1" ] && listen_addr="${lan_addr}" || { listen_addr="0.0.0.0"; set_type="start" && set_firewall 2>"/dev/null"; }
-	{ [ -n "${username}" ] && [ -n "${password}" ]; } && auth_arg="-user ${username} -password ${password}"
+	if [ "${allow_wan}" = "1" ]; then
+		set_type="start"
+	fi
+	set_firewall 2>/dev/null
+	[ -n "${username}" ] && [ -n "${password}" ] && auth_arg="-user ${username} -password ${password}"
 	[ "${read_only}" -eq "1" ] && readonly_arg="-read-only"
-	{ [ "${use_https}" -eq "1" ] && [ -e "${cert_cer}" ] && [ -e "${cert_key}" ]; } && https_arg="-https-mode -https-cert-file ${cert_cer} -https-key-file ${cert_key}"
-	/usr/bin/gowebdav -dir "${root_dir}" -http "${listen_addr}:${listen_port}" ${auth_arg} ${readonly_arg} ${https_arg} &
+	[ "${use_https}" -eq "1" ] && [ -e "${cert_cer}" ] && [ -e "${cert_key}" ] && https_arg="-https-mode -https-cert-file ${cert_cer} -https-key-file ${cert_key}"
+	procd_open_instance
+	procd_set_param command "$PROG"
+	procd_append_param command -dir "${root_dir}" -http ":${listen_port}" ${auth_arg} ${readonly_arg} ${https_arg}
+	procd_set_param respawn
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
 }
 
-stop() {
-	init_conf
-
-	set_type="stop" && set_firewall 2>"/dev/null"
-	killall "gowebdav" 2>"/dev/null"
+service_triggers() {
+	procd_add_reload_trigger "gowebdav"
 }
