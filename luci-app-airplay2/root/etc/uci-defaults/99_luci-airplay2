@@ -1,0 +1,11 @@
+#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@airplay2[-1]
+	add ucitrack airplay2
+	set ucitrack.@airplay2[-1].init=airplay2
+	commit ucitrack
+EOF
+
+rm -f /tmp/luci-indexcache
+exit 0
