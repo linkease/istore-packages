@@ -38,9 +38,10 @@ port = s:option(Value, "port", translate("Port"))
 port.rmempty = false
 port.datatype = "port"
 
-alsa_output_device = s:option(ListValue, "alsa_output_device", translate("Alsa Output Device"))
+alsa_output_device = s:option(Value, "alsa_output_device", translate("Alsa Output Device"))
 alsa_output_device:value("", translate("default"))
 alsa_output_device:value("hw:0", translate("1st Soundcard (hw:0)"))
+alsa_output_device:value("hw:0,3", translate("1st Soundcard 4th device (hw:0,3)"))
 alsa_output_device:value("hw:1", translate("2nd Soundcard (hw:1)"))
 alsa_output_device:value("hw:2", translate("3rd Soundcard (hw:2)"))
 

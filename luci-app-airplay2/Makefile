@@ -10,7 +10,7 @@ LUCI_TITLE:=Luci for Apple Airplay2 Receiver
 LUCI_DEPENDS:=+alsa-utils +shairport-sync-openssl
 LUCI_PKGARCH:=all
 
-PKG_VERSION:=1-11
+PKG_VERSION:=1-12
 PKG_RELEASE:=
 
 define Package/luci-app-airplay2/conffiles

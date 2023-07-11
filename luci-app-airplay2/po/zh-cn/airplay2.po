@@ -58,6 +58,9 @@ msgstr "第 2 张声卡 (hw:1)"
 msgid "3rd Soundcard (hw:2)"
 msgstr "第 3 张声卡 (hw:2)"
 
+msgid "1st Soundcard 4th device (hw:0,3)"
+msgstr "第 1 张声卡的第 4 设备(hw:0,3)"
+
 msgid "Alsa Output Rate"
 msgstr "音频输出采样率"
 
