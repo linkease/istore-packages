@@ -8,14 +8,6 @@ o.enabled = "true"
 o.disabled = "false"
 o.default = o.disabled
 
---o = s:option(Value, "Username", translate("Username"))
---o.description = translate("The login name for WebUI.")
---o.placeholder = "admin"
-
---o = s:option(Value, "Password", translate("Password"))
---o.description = translate("The login password for WebUI.")
---o.password  =  true
-
 o = s:option(Value, "Locale", translate("Locale Language"))
 o:value("en", translate("English"))
 o:value("zh_CN", translate("Chinese"))
