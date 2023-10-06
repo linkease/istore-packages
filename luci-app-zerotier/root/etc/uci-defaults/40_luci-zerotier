@@ -6,10 +6,6 @@ uci -q batch <<-EOF >/dev/null
 	set ucitrack.@zerotier[-1].init=luci_zerotier
 	commit ucitrack
 	delete firewall.zerotier
-	set firewall.zerotier=include
-	set firewall.zerotier.type=script
-	set firewall.zerotier.path=/etc/zerotier.start
-	set firewall.zerotier.reload=1
 	commit firewall
 EOF
 

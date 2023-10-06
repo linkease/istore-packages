@@ -9,8 +9,8 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=LuCI for Zerotier
 LUCI_DEPENDS:=+zerotier
 LUCI_PKGARCH:=all
-PKG_VERSION:=1.0
-PKG_RELEASE:=21
+PKG_VERSION:=1.1.0-1
+PKG_RELEASE:=
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
@@ -21,6 +21,10 @@ define Package/luci-app-zerotier/prerm
 /etc/init.d/luci_zerotier disable
 /etc/init.d/luci_zerotier stop
 exit 0
+endef
+
+define Package/luci-app-zerotier/conffiles
+/etc/config/zero
 endef
 
 # call BuildPackage - OpenWrt buildroot signature
