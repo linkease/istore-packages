@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 LUCI_TITLE:=LuCI for Zerotier
 LUCI_DEPENDS:=+zerotier
 LUCI_PKGARCH:=all
-PKG_VERSION:=1.1.0-1
+PKG_VERSION:=1.1.1-1
 PKG_RELEASE:=
 
 include $(TOPDIR)/feeds/luci/luci.mk

@@ -5,7 +5,7 @@ START=99
 USE_PROCD=1
 
 PROG=/usr/bin/zerotier-one
-CONFIG_PATH=/var/lib/zerotier-one
+CONFIG_PATH=/var/lib/zerotier-luci
 
 service_triggers() {
 	procd_add_reload_trigger "zerotier"
@@ -51,7 +51,7 @@ start_instance() {
 	mkdir -p $CONFIG_PATH/networks.d
 
 	config_get port $cfg 'port'
-	[ -f "$CONFIG_PATH/identity.secret" ] || config_get secret $cfg 'secret'
+	[ -f "$CONFIG_PATH/identity.secret" ] || config_get secret $cfg 'secret' "generate"
 
 	if [ -n "$port" ]; then
 		ARGS="$ARGS -p$port"
@@ -94,7 +94,7 @@ start_instance() {
 }
 
 start_service() {
-	/etc/init.d/zerotier running && /etc/init.d/zerotier stop 2>/dev/null
+	/etc/init.d/zerotier stop 2>/dev/null
 	local nat
 	config_load 'zerotier'
 	config_get_bool nat "sample_config" 'nat' 0

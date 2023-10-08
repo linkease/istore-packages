@@ -10,6 +10,12 @@ uci -q batch <<-EOF >/dev/null
 EOF
 
 /etc/init.d/zerotier disable
+sleep 1
+if /etc/init.d/zerotier running; then
+	echo "stop zerotier" >&2
+	/etc/init.d/zerotier stop
+	sleep 6
+fi
 
 rm -f /tmp/luci-indexcache
 exit 0
