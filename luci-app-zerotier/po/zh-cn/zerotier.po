@@ -23,3 +23,18 @@ msgstr "基本设置"
 
 msgid "Interface Info"
 msgstr "接口信息"
+
+msgid "ZeroTier Network ID"
+msgstr "ZeroTier 网络 ID"
+
+msgid "Allow Managed"
+msgstr "允许私有网络路由"
+
+msgid "Allow Global"
+msgstr "允许公共网络路由"
+
+msgid "Allow Default"
+msgstr "允许默认网关"
+
+msgid "Allow DNS"
+msgstr "允许 DNS"

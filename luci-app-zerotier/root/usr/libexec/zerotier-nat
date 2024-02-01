@@ -6,10 +6,32 @@ iptables_w() {
     echo iptables -w 1 "$@" >>$IPTABLES_FILE
 }
 
+case "x${1}" in
+    xinit)
+        iptables -w 1 -t nat -L postrouting_rule | grep -Fq zerotier_nat && exit 0
+        iptables -w 1 -N zerotier_forward
+        iptables -w 1 -I forwarding_rule -i zt+ -j zerotier_forward
+        iptables -w 1 -I forwarding_rule -o zt+ -j zerotier_forward
+        iptables -w 1 -t nat -N zerotier_nat
+        iptables -w 1 -t nat -I postrouting_rule -j zerotier_nat
+        exit 0
+    ;;
+    xdeinit)
+        iptables -w 1 -D forwarding_rule -i zt+ -j zerotier_forward 2>/dev/null
+        iptables -w 1 -D forwarding_rule -o zt+ -j zerotier_forward 2>/dev/null
+        iptables -w 1 -t nat -D postrouting_rule -j zerotier_nat 2>/dev/null
+        iptables -w 1 -F zerotier_forward 2>/dev/null
+        iptables -w 1 -X zerotier_forward 2>/dev/null
+        iptables -w 1 -t nat -F zerotier_nat 2>/dev/null
+        iptables -w 1 -t nat -X zerotier_nat 2>/dev/null
+        exit 0
+    ;;
+esac
+
 while :; do
-    [ -d /var/run/zerotier ] || exit 0
+    [ -f /var/run/zerotier/nat.enabled ] || exit 0
     sleep 3
-    [ -d /var/run/zerotier ] || exit 0
+    [ -f /var/run/zerotier/nat.enabled ] || exit 0
     [ -f /var/run/zerotier/netchanged ] || continue
     netchanged=$(date '+%s' -r /var/run/zerotier/netchanged)
     now=$(date '+%s')

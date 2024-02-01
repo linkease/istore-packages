@@ -77,13 +77,33 @@ start_instance() {
 		rm -f $CONFIG_PATH/identity.public
 	fi
 
+	zt_local() {
+		local network uci zt default
+		network=$2
+		default=$4
+		zt=$5
+		config_get uci $1 $3 $default
+		[ "$uci" = "$default" ] && return 0
+		echo "$zt=$uci" >> $CONFIG_PATH/networks.d/$network.local.conf
+	}
+
 	add_join() {
+		local enabled network
+		config_get_bool enabled $1 enabled 0
+		[ "$enabled" = 1 ] || return 0
+		config_get network $1 network
+		[ -n "$network" ] || return 0
 		# an (empty) config file will cause ZT to join a network
-		touch $CONFIG_PATH/networks.d/$1.conf
+		touch $CONFIG_PATH/networks.d/$network.conf
+		zt_local $1 "$network" allow_managed 1 allowManaged
+		zt_local $1 "$network" allow_global 0 allowGlobal
+		zt_local $1 "$network" allow_default 0 allowDefault
+		zt_local $1 "$network" allow_dns 0 allowDNS
 	}
 
 	rm -f $CONFIG_PATH/networks.d/*.conf
-	config_list_foreach $cfg 'join' add_join
+	rm -f $CONFIG_PATH/networks.d/*.local.conf
+	config_foreach add_join 'join'
 
 	procd_open_instance
 	procd_set_param command $PROG $ARGS $CONFIG_PATH
@@ -99,30 +119,43 @@ start_service() {
 	config_load 'zerotier'
 	config_get_bool nat "sample_config" 'nat' 0
 	config_get_bool enabled "sample_config" 'enabled' 0
-	if [ "$nat" -eq 1 -a $enabled -eq 1 ]; then
+	if [ $enabled -eq 1 ]; then
 		mkdir -p /var/run/zerotier
-
-		iptables_w -N zerotier_forward
-		iptables_w -I FORWARD -i zt+ -j zerotier_forward
-		iptables_w -I FORWARD -o zt+ -j zerotier_forward
-		iptables_w -t nat -N zerotier_nat
-		iptables_w -t nat -I POSTROUTING -j zerotier_nat
+		mkdir -p /tmp/dnsmasq.d/zerotier
+		>/tmp/dnsmasq.d/zerotier/dns.conf
+		echo "conf-dir=/tmp/dnsmasq.d/zerotier" >/tmp/dnsmasq.d/zerotier.conf
+		touch /var/run/zerotier/dns.enabled
+		if [ "$nat" -eq 1 ]; then
+			touch /var/run/zerotier/nat.enabled
+			/usr/libexec/zerotier-nat init
+			echo "/usr/libexec/zerotier-nat init" >/var/etc/zerotier.include
+		else
+			rm -f /var/etc/zerotier.include /var/run/zerotier/nat.enabled
+			/usr/libexec/zerotier-nat deinit
+		fi
 	else
 		stop_service
+		return 0
 	fi
-	procd_open_instance zerotier_nat
-	procd_set_param command /usr/libexec/zerotier-nat
+
+	if [ "$nat" -eq 1 ]; then
+		procd_open_instance zerotier_nat
+		procd_set_param command /usr/libexec/zerotier-nat
+		procd_close_instance
+	fi
+	procd_open_instance zerotier_dns
+	procd_set_param command /usr/libexec/zerotier-dns
 	procd_close_instance
-	config_foreach start_instance 'zerotier'
+	start_instance "sample_config"
 }
 
 stop_service() {
+	rm -f /var/etc/zerotier.include /var/run/zerotier/dns.enabled /var/run/zerotier/nat.enabled
+	if [ -e /tmp/dnsmasq.d/zerotier.conf ];then
+		rm -f /tmp/dnsmasq.d/zerotier.conf
+		/etc/init.d/dnsmasq enabled && /etc/init.d/dnsmasq restart
+	fi
+	rm -rf /tmp/dnsmasq.d/zerotier
 	rm -rf /var/run/zerotier
-	iptables_w -D FORWARD -i zt+ -j zerotier_forward 2>/dev/null
-	iptables_w -D FORWARD -o zt+ -j zerotier_forward 2>/dev/null
-	iptables_w -t nat -D POSTROUTING -j zerotier_nat 2>/dev/null
-	iptables_w -F zerotier_forward 2>/dev/null
-	iptables_w -X zerotier_forward 2>/dev/null
-	iptables_w -t nat -F zerotier_nat 2>/dev/null
-	iptables_w -t nat -X zerotier_nat 2>/dev/null
+	/usr/libexec/zerotier-nat deinit
 }
