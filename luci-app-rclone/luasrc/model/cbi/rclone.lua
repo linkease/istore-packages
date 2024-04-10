@@ -9,7 +9,7 @@ local uci = require 'luci.model.uci'.cursor()
 
 local m, s
 
-local running = (luci.sys.call('pidof rclone > /dev/null') == 0)
+local running = (luci.sys.call('ps |grep -Fw \'/usr/bin/rclone rcd\' |grep -Fwq \'rcd -vv\'') == 0)
 
 local state_msg = ''
 local trport = uci:get('rclone', 'config', 'port')
@@ -23,6 +23,14 @@ elseif triptype == 'lan' then
     trip = uci:get('network', 'lan', 'ipaddr')
 else
     trip = '[ip]'
+end
+
+if type(trip) == 'table' then
+    require('luci.ip')
+    trip = trip[1]
+    trip = luci.ip.new(trip)
+    trip = trip:host()
+    trip = trip:string()
 end
 
 if running then
