@@ -13,6 +13,13 @@ uci -q batch <<-EOF >/dev/null
 	commit firewall
 EOF
 
+if [ -x /sbin/fw4 ]; then
+	if ! nft -at list chain inet fw4 zerotier_postrouting >/dev/null 2>&1 ; then
+		# load nftables.d
+		fw4 -q reload
+	fi
+fi
+
 zt_migrate_config(){
 	local join
 	local joins=$(uci get zerotier.sample_config.join)

@@ -1,4 +1,6 @@
 #!/bin/sh
+NFTABLES=false
+[ -x /sbin/fw4 ] && NFTABLES=true
 
 IPTABLES_FILE=/var/run/zerotier/nat.iptables
 
@@ -8,6 +10,28 @@ iptables_w() {
 
 case "x${1}" in
     xinit)
+        if $NFTABLES; then
+            [ -f /var/run/zerotier/nat.enabled ] || exit 0
+            nft -f- >/var/run/zerotier/nat.log 2>&1 <<-EOF
+flush chain inet fw4 zerotier_forward
+flush chain inet fw4 zerotier_input
+flush chain inet fw4 zerotier_postrouting
+table inet fw4 {
+    chain zerotier_input {
+        iifname "zt*" accept
+    }
+    chain zerotier_forward {
+        iifname "zt*" accept
+        oifname "zt*" accept
+    }
+    chain zerotier_postrouting {
+        iifname "zt*" masquerade
+        oifname "zt*" masquerade
+    }
+}
+EOF
+            exit 0
+        fi
         iptables -w 1 -t nat -L postrouting_rule | grep -Fq zerotier_nat && exit 0
         iptables -w 1 -N zerotier_forward
         iptables -w 1 -I forwarding_rule -i zt+ -j zerotier_forward
@@ -17,6 +41,13 @@ case "x${1}" in
         exit 0
     ;;
     xdeinit)
+        if $NFTABLES; then
+            nft -f- 2>/dev/null <<-EOF
+flush chain inet fw4 zerotier_forward
+flush chain inet fw4 zerotier_input
+flush chain inet fw4 zerotier_postrouting
+EOF
+        fi
         iptables -w 1 -D forwarding_rule -i zt+ -j zerotier_forward 2>/dev/null
         iptables -w 1 -D forwarding_rule -o zt+ -j zerotier_forward 2>/dev/null
         iptables -w 1 -t nat -D postrouting_rule -j zerotier_nat 2>/dev/null
@@ -27,6 +58,10 @@ case "x${1}" in
         exit 0
     ;;
 esac
+
+if $NFTABLES; then
+    exit 0
+fi
 
 while :; do
     [ -f /var/run/zerotier/nat.enabled ] || exit 0
