@@ -47,6 +47,8 @@ gen_include() {
 }
 
 run_service() {
+	local enable remarks protocol family proto listen_port reuseaddr dest_proto dest_ip dest_port firewall_accept
+	local ipv6only_params
 	config_get enable $1 enable
 	[ "$enable" = "0" ] && return 0
 	config_get remarks $1 remarks
@@ -68,16 +70,16 @@ run_service() {
 	fi
 	
 	if [ "$family" == "6" ]; then
-		ipv6only_params=",ipv6-v6only"
+		ipv6only_params=",ipv6only"
 	else
 		ipv6only_params=""
 	fi
 	
 	# 端口转发
 	if [ "$protocol" == "port_forwards" ]; then
-		listen=${proto}${family}
+		local listen=${proto}${family}
 		[ "$family" == "" ] && listen=${proto}6
-		${CONFIG_PATH}/$1 ${listen}-listen:${listen_port}${ipv6only_params}${reuseaddr},fork ${dest_proto}:${dest_ip}:${dest_port} >/dev/null 2>&1 &
+		${CONFIG_PATH}/$1 ${listen}-listen:${listen_port}${ipv6only_params}${reuseaddr},fork ${dest_proto}-connect:${dest_ip}:${dest_port} >/dev/null 2>&1 &
 	fi
 	
 	[ "$firewall_accept" == "1" ] && {
@@ -91,13 +93,15 @@ run_service() {
 }
 
 stop_service() {
+	rm -f /var/etc/$CONFIG.include
+	sleep 1
 	ps -w | grep "$CONFIG_PATH/" | grep -v "grep" | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1 &
 	del_rule
-	rm -rf $CONFIG_PATH /var/etc/$CONFIG.include
+	rm -rf $CONFIG_PATH 
 }
 
 start() {
-	enable=$(uci -q get socat_luci.@global[0].enable)
+	local enable=$(uci -q get socat_luci.@global[0].enable)
 	if [ "$enable" = "0" ];then
 		stop_service
 	else
