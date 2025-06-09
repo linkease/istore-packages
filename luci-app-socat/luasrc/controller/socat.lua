@@ -13,7 +13,7 @@ end
 function status()
       local e = {}
       e.index = luci.http.formvalue("index")
-      e.status = luci.sys.call(string.format("ps -w | grep -v 'grep' | grep '/var/etc/socat/%s' >/dev/null", luci.http.formvalue("id"))) == 0
+      e.status = luci.sys.call(string.format("busybox ps -w | grep -v 'grep' | grep '/var/etc/socat/%s' >/dev/null", luci.http.formvalue("id"))) == 0
       http.prepare_content("application/json")
       http.write_json(e)
 end
