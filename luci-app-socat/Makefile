@@ -5,7 +5,7 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_VERSION:=20220823-1
+PKG_VERSION:=2025.06.09-r1
 PKG_RELEASE:=
 LUCI_TITLE:=LuCI support for Socat
 LUCI_DEPENDS:=+socat
