@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2020 Lienol <lawlienol@gmail.com>
-# Copyright (C) 2024 jjm2473 <jjm2473@gmail.com> supports fw4
+# Copyright (C) 2025 jjm2473 <jjm2473@gmail.com> supports fw4
 
 START=99
 
@@ -69,7 +69,8 @@ gen_include() {
 
 run_service() {
 	local enable remarks protocol family proto listen_port reuseaddr dest_proto dest_ip dest_port firewall_accept
-	local ipv6only_params
+	local ipv6only_params proxy_arg
+	local proxy proxy_server proxy_port
 	config_get enable $1 enable
 	[ "$enable" = "0" ] && return 0
 	config_get remarks $1 remarks
@@ -81,6 +82,9 @@ run_service() {
 	config_get dest_proto $1 dest_proto
 	config_get dest_ip $1 dest_ip
 	config_get dest_port $1 dest_port
+	config_get proxy $1 proxy
+	config_get proxy_server $1 proxy_server
+	config_get proxy_port $1 proxy_port
 	config_get firewall_accept $1 firewall_accept
 	ln -s /usr/bin/socat ${CONFIG_PATH}/$1
 	
@@ -91,7 +95,7 @@ run_service() {
 	fi
 	
 	if [ "$family" == "6" ]; then
-		ipv6only_params=",ipv6only"
+		ipv6only_params=",ipv6-v6only"
 	else
 		ipv6only_params=""
 	fi
@@ -100,7 +104,20 @@ run_service() {
 	if [ "$protocol" == "port_forwards" ]; then
 		local listen=${proto}${family}
 		[ "$family" == "" ] && listen=${proto}6
-		${CONFIG_PATH}/$1 ${listen}-listen:${listen_port}${ipv6only_params}${reuseaddr},fork ${dest_proto}-connect:${dest_ip}:${dest_port} >/dev/null 2>&1 &
+		[ "$proxy" != "" ] && {
+			proxy_arg=""
+			[ "$proxy" == "socks4/4a" ] && {
+				dest_proto="socks4a"
+				proxy_arg="socksport"
+			}
+			[ "$proxy" == "http" ] && {
+				dest_proto="proxy"
+				proxy_arg="proxyport"
+			}
+			[ -n "$proxy_server" ] && dest_proto="${dest_proto}:${proxy_server}"
+			[ -n "$proxy_port" ] && proxy_arg=",${proxy_arg}=${proxy_port}"
+		}
+		${CONFIG_PATH}/$1 ${listen}-listen:${listen_port}${ipv6only_params}${reuseaddr},fork ${dest_proto}:${dest_ip}:${dest_port}${proxy_arg} >/dev/null 2>&1 &
 	fi
 	
 	[ "$firewall_accept" == "1" ] && {

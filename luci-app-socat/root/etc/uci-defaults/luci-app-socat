@@ -27,13 +27,10 @@ if [ -x /sbin/fw4 ]; then
 		fw4 -q reload
 	fi
 fi
-
-/etc/init.d/socat_luci enable
-
 uci -q batch <<-EOF >/dev/null
 	delete ucitrack.@socat_luci[-1]
 	add ucitrack socat_luci
-	set ucitrack.@socat_luci[-1].init=socat_luci
+	set ucitrack.@socat_luci[-1].init=luci_socat
 	commit ucitrack
 EOF
 
