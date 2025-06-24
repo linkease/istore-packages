@@ -1,10 +1,10 @@
 require("luci.util")
 
-mp = Map("uuplugin", translate("UU Game Accelerator"))
+mp = Map("uugamebooster", translate("UU Game Accelerator"))
 mp.description = translate("A Paid Game Acceleration service")
 mp:section(SimpleSection).template  = "uuplugin/uuplugin_status"
 
-s = mp:section(TypedSection, "uuplugin")
+s = mp:section(NamedSection, "config")
 s.anonymous=true
 s.addremove=false
 

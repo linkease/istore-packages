@@ -1,7 +1,7 @@
 module("luci.controller.uuplugin",package.seeall)
 
 function index()
-	if not nixio.fs.access("/etc/config/uuplugin") then
+	if not nixio.fs.access("/etc/config/uugamebooster") then
 		return
 	end
 
@@ -11,7 +11,7 @@ end
 
 function act_status()
 	local e = {}
-	e.running = luci.sys.call("pgrep -f uuplugin >/dev/null") == 0
+	e.running = luci.sys.call("pgrep -f uugamebooster >/dev/null") == 0
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
 end
