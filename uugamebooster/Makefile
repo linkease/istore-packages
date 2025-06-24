@@ -74,21 +74,20 @@ define Package/uugamebooster/postinst
 [ -z "$${IPKG_INSTROOT}" ] || exit 0
 
 # 添加 UU 防火墙 zone
-uci -q get firewall.@zone[*].name | grep -q '^UU$$' || {
-    uci add firewall zone
-    uci set firewall.@zone[-1].name='UU'
-    uci set firewall.@zone[-1].input='ACCEPT'
-    uci set firewall.@zone[-1].output='ACCEPT'
-    uci set firewall.@zone[-1].forward='ACCEPT'
-    uci set firewall.@zone[-1].device='tun16+'
+uci -q get firewall.uu_zone || {
+    uci set firewall.uu_zone=zone
+    uci set firewall.uu_zone.name='UU'
+    uci set firewall.uu_zone.input='ACCEPT'
+    uci set firewall.uu_zone.output='ACCEPT'
+    uci set firewall.uu_zone.forward='ACCEPT'
+    uci set firewall.uu_zone.device='tun16+'
 }
 
 # 添加 lan 到 UU 的 forwarding
-uci -q get firewall.@forwarding[*].src | grep -q '^lan$$' && \
-uci -q get firewall.@forwarding[*].dest | grep -q '^UU$$' || {
-    uci add firewall forwarding
-    uci set firewall.@forwarding[-1].src='lan'
-    uci set firewall.@forwarding[-1].dest='UU'
+uci -q get firewall.uu_forwarding || {
+    uci set firewall.uu_forwarding=forwarding
+    uci set firewall.uu_forwarding.src='lan'
+    uci set firewall.uu_forwarding.dest='UU'
 }
 
 # 应用配置
@@ -101,16 +100,10 @@ define Package/uugamebooster/postrm
 [ -z "$${IPKG_INSTROOT}" ] || exit 0
 
 # 删除 lan -> UU 的 forwarding
-uci show firewall | grep "forwarding" | grep "dest='UU'" | \
-cut -d. -f2 | while read -r idx; do
-    uci delete firewall.$$idx
-done
+uci delete firewall.uu_forwarding 2>/dev/null
 
 # 删除 name='UU' 的 zone
-uci show firewall | grep "zone" | grep "name='UU'" | \
-cut -d. -f2 | while read -r idx; do
-    uci delete firewall.$$idx
-done
+uci delete firewall.uu_zone 2>/dev/null
 
 # 应用配置
 uci commit firewall
