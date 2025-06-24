@@ -5,7 +5,7 @@ USE_PROCD=1
 START=99
 
 CONF="uugamebooster"
-PROG="/usr/bin/uugamebooster"
+PROG="/usr/libexec/uugamebooster/uugamebooster"
 
 UU_CONF="/usr/share/uugamebooster/uu.conf"
 

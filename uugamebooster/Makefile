@@ -1,23 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-only
-#
 # Copyright (C) 2021 ImmortalWrt.org
+# Copyright (C) 2021 KFERMercer <KFER.Mercer@gmail.com>
+#
+# This is free software, licensed under the GNU General Public License v3.
+#
+#
+# to get the latest version & sha256 checksum:
+# wget -O uu.tar.gz "$(curl -s -H "Accept:text/plain" "http://router.uu.163.com/api/plugin?type=openwrt-$(UU_ARCH)")" && sha256sum uu.tar.gz
+
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uugamebooster
-PKG_VERSION:=9.2.10
+PKG_VERSION:=9.2.18
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(ARCH).tar.gz
 PKG_SOURCE_URL:=https://uu.gdl.netease.com/uuplugin/openwrt-$(ARCH)/v$(PKG_VERSION)/uu.tar.gz?
 ifeq ($(ARCH),aarch64)
-  PKG_HASH:=a605b412eeb7bdf198668b81c7f96308b63318320a9e7de86a242a9200bc9534
+  PKG_HASH:=fc35c3b52c5d896909d66ade493f9e485a8d3ca5dfd45fc4ef612ba68ab7017b
 else ifeq ($(ARCH),arm)
-  PKG_HASH:=0d4060f22e1dfa7d2058b2a73dd8415033c34ccd6609c20568e689650069536a
+  PKG_HASH:=2c518bf158901cea3a44e6babc71378fb3578c09130b8d1a6354d274b154a539
 else ifeq ($(ARCH),mipsel)
-  PKG_HASH:=dd88577847cbaccde8ce1a7208d00692726b54de132f58f5be4c849ba1f17421
+  PKG_HASH:=19918cb21496658ebce9eceb660df8bc0959dc90c19e6f31b82a73e5fc707da9
 else ifeq ($(ARCH),x86_64)
-  PKG_HASH:=3505ee49865682235155f642744e8150de2c734ad5aa5b52e1cef0653a15b72a
+  PKG_HASH:=1fdd14b91bbf605c336ca44b04de3de44b7e5a729ee6623e6d3e4c9d8cbd6a0e
 endif
 
 PKG_LICENSE:=Proprietary
@@ -46,12 +53,13 @@ endef
 define Package/uugamebooster/conffiles
 /.uuplugin_uuid
 /usr/share/uugamebooster/uu.conf
+/etc/config/uugamebooster
 endef
 
 define Package/uugamebooster/install
-	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/uuplugin $(1)/usr/bin/uugamebooster
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/xtables-nft-multi $(1)/usr/bin/xtables-nft-multi
+	$(INSTALL_DIR) $(1)/usr/libexec/uugamebooster
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/uuplugin $(1)/usr/libexec/uugamebooster/uugamebooster
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/xtables-nft-multi $(1)/usr/libexec/uugamebooster/xtables-nft-multi
 
 	$(INSTALL_DIR) $(1)/usr/share/uugamebooster
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/uu.conf $(1)/usr/share/uugamebooster/uu.conf
@@ -59,6 +67,54 @@ define Package/uugamebooster/install
 	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/init.d
 	$(INSTALL_CONF) ./files/uugamebooster.config $(1)/etc/config/uugamebooster
 	$(INSTALL_BIN) ./files/uugamebooster.init $(1)/etc/init.d/uugamebooster
+endef
+
+define Package/uugamebooster/postinst
+#!/bin/sh
+[ -z "$${IPKG_INSTROOT}" ] || exit 0
+
+# 添加 UU 防火墙 zone
+uci -q get firewall.@zone[*].name | grep -q '^UU$$' || {
+    uci add firewall zone
+    uci set firewall.@zone[-1].name='UU'
+    uci set firewall.@zone[-1].input='ACCEPT'
+    uci set firewall.@zone[-1].output='ACCEPT'
+    uci set firewall.@zone[-1].forward='ACCEPT'
+    uci set firewall.@zone[-1].device='tun16+'
+}
+
+# 添加 lan 到 UU 的 forwarding
+uci -q get firewall.@forwarding[*].src | grep -q '^lan$$' && \
+uci -q get firewall.@forwarding[*].dest | grep -q '^UU$$' || {
+    uci add firewall forwarding
+    uci set firewall.@forwarding[-1].src='lan'
+    uci set firewall.@forwarding[-1].dest='UU'
+}
+
+# 应用配置
+uci commit firewall
+/etc/init.d/firewall reload >/dev/null 2>&1
+endef
+
+define Package/uugamebooster/postrm
+#!/bin/sh
+[ -z "$${IPKG_INSTROOT}" ] || exit 0
+
+# 删除 lan -> UU 的 forwarding
+uci show firewall | grep "forwarding" | grep "dest='UU'" | \
+cut -d. -f2 | while read -r idx; do
+    uci delete firewall.$$idx
+done
+
+# 删除 name='UU' 的 zone
+uci show firewall | grep "zone" | grep "name='UU'" | \
+cut -d. -f2 | while read -r idx; do
+    uci delete firewall.$$idx
+done
+
+# 应用配置
+uci commit firewall
+/etc/init.d/firewall reload >/dev/null 2>&1
 endef
 
 $(eval $(call BuildPackage,uugamebooster))
