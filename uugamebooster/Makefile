@@ -12,19 +12,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uugamebooster
-PKG_VERSION:=9.2.18
+PKG_VERSION:=9.3.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(ARCH).tar.gz
 PKG_SOURCE_URL:=https://uu.gdl.netease.com/uuplugin/openwrt-$(ARCH)/v$(PKG_VERSION)/uu.tar.gz?
 ifeq ($(ARCH),aarch64)
-  PKG_HASH:=fc35c3b52c5d896909d66ade493f9e485a8d3ca5dfd45fc4ef612ba68ab7017b
+  PKG_HASH:=391a48ac845d8d4d79ab7e08ebd904b766c73f4979bec32db008659948fdcf00
 else ifeq ($(ARCH),arm)
-  PKG_HASH:=2c518bf158901cea3a44e6babc71378fb3578c09130b8d1a6354d274b154a539
+  PKG_HASH:=8a16ff156e04badff91e5ecb6b1b0ba0db9970ea8d7f29a3fdcc1473477e0c51
 else ifeq ($(ARCH),mipsel)
-  PKG_HASH:=19918cb21496658ebce9eceb660df8bc0959dc90c19e6f31b82a73e5fc707da9
+  PKG_HASH:=47f9b75323280f215345c553706067fc136df1f5e7401fb95621bbe49e6dd871
 else ifeq ($(ARCH),x86_64)
-  PKG_HASH:=1fdd14b91bbf605c336ca44b04de3de44b7e5a729ee6623e6d3e4c9d8cbd6a0e
+  PKG_HASH:=9c1bde8d6a37935fd0f0351e27beae002d5f6fb2242827f4da87b54b5170d849
 endif
 
 PKG_LICENSE:=Proprietary
@@ -90,6 +90,13 @@ uci -q get firewall.uu_forwarding || {
     uci set firewall.uu_forwarding.dest='UU'
 }
 
+# 添加 UU 到 lan 的 forwarding
+uci -q get firewall.uu_reverse_forwarding || {
+    uci set firewall.uu_reverse_forwarding=forwarding
+    uci set firewall.uu_reverse_forwarding.src='UU'
+    uci set firewall.uu_reverse_forwarding.dest='lan'
+}
+
 # 应用配置
 uci commit firewall
 /etc/init.d/firewall reload >/dev/null 2>&1
@@ -102,7 +109,10 @@ define Package/uugamebooster/postrm
 # 删除 lan -> UU 的 forwarding
 uci delete firewall.uu_forwarding 2>/dev/null
 
-# 删除 name='UU' 的 zone
+# 删除 UU -> lan 的 forwarding
+uci delete firewall.uu_reverse_forwarding 2>/dev/null
+
+# 删除 uu 的 zone
 uci delete firewall.uu_zone 2>/dev/null
 
 # 应用配置
