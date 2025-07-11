@@ -13,7 +13,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uugamebooster
 PKG_VERSION:=9.3.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(ARCH).tar.gz
 PKG_SOURCE_URL:=https://uu.gdl.netease.com/uuplugin/openwrt-$(ARCH)/v$(PKG_VERSION)/uu.tar.gz?
@@ -100,6 +100,7 @@ uci -q get firewall.uu_reverse_forwarding || {
 # 应用配置
 uci commit firewall
 /etc/init.d/firewall reload >/dev/null 2>&1
+exit 0
 endef
 
 define Package/uugamebooster/postrm
@@ -118,6 +119,7 @@ uci delete firewall.uu_zone 2>/dev/null
 # 应用配置
 uci commit firewall
 /etc/init.d/firewall reload >/dev/null 2>&1
+exit 0
 endef
 
 $(eval $(call BuildPackage,uugamebooster))
