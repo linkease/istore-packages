@@ -47,7 +47,7 @@
 | luci-app-zerotier           | https://github.com/coolsnowwolf/luci/tree/master/applications/luci-app-zerotier |          |
 | luci-theme-argon            | https://github.com/jjm2473/luci-theme-argon/tree/luci-21     | 代码修改 |
 |                             | https://github.com/jerrykuku/luci-theme-argon                | 上游     |
-| qBittorrent-static          | https://github.com/coolsnowwolf/packages/blob/master/net/qBittorrent-static |          |
+| qBittorrent-static          | https://github.com/teleostnacl/luci-app-qbittorrent-static/tree/master/qbittorrent-nox-static |   修改包名，无uci和init.d       |
 | qBittorrent                 | https://github.com/coolsnowwolf/packages/blob/master/net/qBittorrent |          |
 | rclone-ng                   | https://github.com/coolsnowwolf/packages/tree/master/net/rclone-ng |          |
 | rclone-webui-react          | https://github.com/coolsnowwolf/packages/tree/master/net/rclone-webui-react |          |
